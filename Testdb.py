@@ -5,10 +5,10 @@ from tkinter import simpledialog, filedialog, messagebox
  
 conn = pyodbc.connect(
     "DRIVER={ODBC Driver 17 for SQL Server};"
-    "SERVER=ORDINATEUR-DE-J\\SQLEXPRESS;"
+    "SERVER=DESKTOP-TBID11H\\SQLEXPRESS;"
     "DATABASE=BookCo;"
-    "UID=APIREST1;"
-    "PWD=123Luteur*;"
+    "UID=APIREST;"
+    "PWD=0000;"
 )
  
 print("Connexion OK")
