@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Depends, HTTPException, Header
+from fastapi import FastAPI, Depends, HTTPException, Header, Request
 from sqlalchemy.orm import Session
 import database
 import schemas
 import models
+import time
 #from database import get_db
 import crud
 from models import get_v_livres
@@ -10,6 +11,16 @@ from schemas import get_v_livres_schema
 from typing import List
 import warnings
 from sqlalchemy.exc import SAWarning
+
+import logging
+
+logging.basicConfig(
+    filename="api.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
+logger = logging.getLogger("api_logger")
 
 warnings.filterwarnings(
     "ignore",
@@ -19,6 +30,26 @@ warnings.filterwarnings(
 app = FastAPI(title="TP API - FastAPI + SQL Server")
 
 API_KEY = "tp-secret-key"
+from fastapi import Request
+import time
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+
+    response = await call_next(request)
+
+    duration = time.time() - start_time
+
+    logger.info(
+        f"{request.client.host} "
+        f"{request.method} "
+        f"{request.url.path} "
+        f"status={response.status_code} "
+        f"time={duration:.3f}s"
+    )
+
+    return response
 
 @app.get("/public")
 def public():
