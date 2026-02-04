@@ -1,0 +1,3 @@
+2026-02-04 14:54:09,902 - INFO - 127.0.0.1 GET /v_livres status=200 time=1.282s
+2026-02-04 16:24:23,654 - INFO - 127.0.0.1 POST /login status=200 time=0.508s
+2026-02-04 16:24:26,956 - INFO - 127.0.0.1 GET /v_livres status=200 time=1.638s
