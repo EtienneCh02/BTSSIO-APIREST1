@@ -1,204 +1,61 @@
-import tkinter as tk
-from tkinter import ttk, messagebox
-import requests
+# Application de Gestion de Livres - API REST & Client Lourd
 
-API_BASE_URL = "http://127.0.0.1:8000"  # URL de ton API FastAPI [file:3]
+Ce projet a été réalisé dans le cadre du **BTS SIO** (Services Informatiques aux Organisations) - Option SLAM. 
+Il s'agit d'une architecture de type **client-serveur** permettant de consulter et gérer un catalogue de livres.
 
-# --- "Base de données" utilisateurs locale (login/mot de passe) ---
-USERS = {
-    "admin": "admin",
-    "user": "user123",
-}
+## Fonctionnalités
+- **API REST (Back-end) :** Développée avec le framework **FastAPI**, elle assure le traitement des données (Consultation, Ajout, Suppression des livres). L'API est connectée à une base de données **SQL Server** grâce à l'ORM **SQLAlchemy** et sécurise l'accès à certaines de ses routes par Header HTTP. L'API est hébergée en local sur le port `8001`.
+- **Client Lourd (Front-end) :** Développé en **Python (Tkinter)**, il offre une interface graphique fluide permettant aux utilisateurs de s'authentifier par login, de visualiser les livres disponibles, et d'effectuer des recherches interactives par mots-clés.
+- **Confort d'utilisation :** Le client gère lui-même le lancement en tâche de fond du serveur de l'API afin de simplifier l'exécution du projet.
 
-# --- Fonctions d'accès à l'API ------------------------------------------------
+## Pré-requis
+- **Python 3.8+** installé sur votre machine.
+- Serveur **SQL Server** actif avec une base de données configurée.
+- Pilotes ODBC installés (exemple : `ODBC Driver 17 for SQL Server`).
 
+## Installation
 
-def get_livres_from_api():
-    """
-    Récupère la liste des livres via l'endpoint /v_livres.
-    L'API renvoie une liste de dicts conformes au schéma V_LivresSchema. [file:3][file:7]
-    """
-    url = f"{API_BASE_URL}/v_livres"
-    try:
-        response = requests.get(url, timeout=5)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        messagebox.showerror("Erreur API", f"Impossible de joindre l'API :\n{e}")
-        return []
+1. **Cloner ou décompresser le projet** dans le répertoire de votre choix.
+2. **Initialiser l'environnement virtuel (Optionnel mais recommandé) :**
+   ```bash
+   python -m venv venv
+   # Activation sous Windows :
+   venv\Scripts\activate
+   ```
+3. **Installer les dépendances requises :**
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. **Base de données :**
+   Assurez-vous que les identifiants de connexion dans `database.py` (ou le `.env`) correspondent à votre instance SQL Server. Au démarrage, SQLAlchemy créera automatiquement les tables nécessaires si elles n'existent pas. *Note : La vue SQL (V_Livres) doit potentiellement être créée dans SQL Server au préalable.*
 
+## Exécution du projet
 
-# --- Fenêtre principale (recherche + tableau) ---------------------------------
+Le lancement de l'application est automatisé. Il suffit de démarrer le client lourd qui se chargera d'initialiser lui-même le serveur API.
 
+1. **Ouvrir un terminal** dans le répertoire racine du projet.
+2. **Exécuter le client :**
+   ```bash
+   python Client/client.py
+   ```
+> *L'API est alors propulsée via `uvicorn` sur l'adresse `http://127.0.0.1:8001` et se fermera seule à la fermeture de la fenêtre graphique Tkinter.*
 
-class MainWindow(tk.Toplevel):
-    def __init__(self, master=None):
-        super().__init__(master)
-        self.title("Client Livres - Recherche")
-        self.geometry("1100x600")
+## Accès & Authentification
 
-        # Frame recherche
-        search_frame = tk.Frame(self)
-        search_frame.pack(fill=tk.X, padx=10, pady=10)
+**1. Connexion au client graphique Tkinter :**
+Pour vous connecter à l'interface de visualisation, vous pouvez utiliser l'un des comptes locaux configurés :
+- Identifiant : `admin` / Mot de passe : `admin`
+- Identifiant : `user` / Mot de passe : `user123`
 
-        tk.Label(search_frame, text="Mot clé (titre) :").pack(side=tk.LEFT)
-        self.search_var = tk.StringVar()
-        tk.Entry(search_frame, textvariable=self.search_var, width=30).pack(
-            side=tk.LEFT, padx=5
-        )
+**2. Requêtes directes vers l'API (ex: via Postman) :**
+Si vous souhaitez interroger l'API manuellement :
+- **URL complète :** `http://127.0.0.1:8001`
+- **Documentation interactive Swagger :** [http://127.0.0.1:8001/docs](http://127.0.0.1:8001/docs)
+- **Sécurité :** L'accès aux points de terminaison protégés requiert l'autorisation explicite dans le header HTTP : `x-api-key: tp-secret-key`.
 
-        tk.Button(search_frame, text="Rechercher", command=self.search).pack(
-            side=tk.LEFT, padx=5
-        )
-        tk.Button(search_frame, text="Rafraîchir", command=self.refresh).pack(
-            side=tk.LEFT, padx=5
-        )
-
-        # Label info
-        self.info_var = tk.StringVar(value="Aucun résultat pour l'instant.")
-        tk.Label(self, textvariable=self.info_var).pack(anchor="w", padx=10)
-
-        # Colonnes alignées avec la vue SQL V_Livres
-        columns = (
-            "Id_Livre",
-            "Titre",
-            "Résumé",
-            "Prix",
-            "Date_de_parution",
-            "ISBN",
-            "Stock",
-            "Id_Editeur",
-        )
-
-        self.tree = ttk.Treeview(self, columns=columns, show="headings")
-
-        self.tree.heading("Id_Livre", text="Id_Livre")
-        self.tree.heading("Titre", text="Titre")
-        self.tree.heading("Résumé", text="Résumé")
-        self.tree.heading("Prix", text="Prix")
-        self.tree.heading("Date_de_parution", text="Date de parution")
-        self.tree.heading("ISBN", text="ISBN")
-        self.tree.heading("Stock", text="Stock")
-        self.tree.heading("Id_Editeur", text="Id_Editeur")
-
-        self.tree.column("Id_Livre", width=70, anchor="center")
-        self.tree.column("Titre", width=250, anchor="w")
-        self.tree.column("Résumé", width=250, anchor="w")
-        self.tree.column("Prix", width=80, anchor="e")
-        self.tree.column("Date_de_parution", width=120, anchor="center")
-        self.tree.column("ISBN", width=140, anchor="center")
-        self.tree.column("Stock", width=60, anchor="center")
-        self.tree.column("Id_Editeur", width=80, anchor="center")
-
-        self.tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-
-        # Barre de défilement verticale
-        scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscrollcommand=scrollbar.set)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-        # Chargement initial
-        self.all_livres = []
-        self.refresh()
-
-    def refresh(self):
-        """Recharge tous les livres depuis l'API et affiche tout."""
-        self.all_livres = get_livres_from_api()
-        self.populate_table(self.all_livres)
-        self.info_var.set(f"{len(self.all_livres)} livre(s) chargé(s) depuis l'API.")
-
-    def search(self):
-        """Filtre localement sur le titre en fonction du mot clé saisi."""
-        keyword = self.search_var.get().strip().lower()
-        if not keyword:
-            self.populate_table(self.all_livres)
-            self.info_var.set(
-                f"{len(self.all_livres)} livre(s) affiché(s) (sans filtre)."
-            )
-            return
-
-        filtered = []
-        for livre in self.all_livres:
-            titre = str(livre.get("Titre", "") or "").lower()
-            if keyword in titre:
-                filtered.append(livre)
-
-        self.populate_table(filtered)
-        self.info_var.set(
-            f"{len(filtered)} livre(s) trouvé(s) pour le mot clé '{keyword}'."
-        )
-
-    def populate_table(self, livres):
-        """Vide le tableau et réinsère les lignes fournies."""
-        for row in self.tree.get_children():
-            self.tree.delete(row)
-
-        for livre in livres:
-            self.tree.insert(
-                "",
-                tk.END,
-                values=(
-                    livre.get("Id_Livre", ""),
-                    livre.get("Titre", ""),
-                    livre.get("Résumé", ""),
-                    livre.get("Prix", ""),
-                    livre.get("Date_de_parution", ""),
-                    livre.get("ISBN", ""),
-                    livre.get("Stock", ""),
-                    livre.get("Id_Editeur", ""),
-                ),
-            )
-
-
-# --- Fenêtre de login ---------------------------------------------------------
-
-
-class LoginWindow(tk.Tk):
-    def __init__(self):
-        super().__init__()
-        self.title("Client Livres - Login")
-        self.geometry("300x160")
-        self.resizable(False, False)
-
-        tk.Label(self, text="Identifiant :").pack(pady=(10, 0))
-        self.username_var = tk.StringVar()
-        tk.Entry(self, textvariable=self.username_var).pack()
-
-        tk.Label(self, text="Mot de passe :").pack(pady=(10, 0))
-        self.password_var = tk.StringVar()
-        tk.Entry(self, textvariable=self.password_var, show="*").pack()
-
-        tk.Button(self, text="Se connecter", command=self.login).pack(pady=10)
-
-    def login(self):
-        username = self.username_var.get().strip()
-        password = self.password_var.get().strip()
-
-        if not username or not password:
-            messagebox.showwarning(
-                "Champs manquants", "Merci de remplir identifiant et mot de passe."
-            )
-            return
-
-        # Vérification locale très simple
-        if USERS.get(username) == password:
-            # Login OK : ouvrir la fenêtre principale
-            self.open_main_window()
-        else:
-            messagebox.showerror("Login échoué", "Identifiant ou mot de passe incorrect.")
-
-    def open_main_window(self):
-        self.withdraw()  # cacher la fenêtre de login
-        main_win = MainWindow(self)
-        main_win.protocol("WM_DELETE_WINDOW", self.on_main_close)
-
-    def on_main_close(self):
-        self.destroy()
-
-
-# --- Point d'entrée -----------------------------------------------------------
-
-
-if __name__ == "__main__":
-    app = LoginWindow()
-    app.mainloop()
+## Structure du Répertoire
+- `main.py` : Point d'entrée de l'API FastAPI (déclarations des routes et du serveur métier).
+- `models.py` / `schemas.py` : Entités structurelles SQLAlchemy et schémas de validation Pydantic.
+- `crud.py` / `database.py` : Logique applicative SQL et paramétrage des instances de base de données.
+- `Client/client.py` : Application fenêtrée du client lourd, exploitant `tkinter` et `requests`.
+- `APISIO.txt` : Documentation textuelle recensant toutes les routes (endpoints) disponibles sur l'API.
