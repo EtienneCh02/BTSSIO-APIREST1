@@ -1,0 +1,61 @@
+================================================================================
+                    DOCUMENTATION API REST - BTSSIO
+================================================================================
+
+Description : 
+API REST développée avec FastAPI et connectée à une base de données SQL Server.
+Permet la gestion de livres.
+
+URL de base : http://127.0.0.1:8001
+
+--- SÉCURITÉ -------------------------------------------------------------------
+Certains endpoints nécessitent une clé d'API passée dans le header HTTP :
+Nom du Header : x-api-key
+Valeur attendue : tp-secret-key (par défaut)
+
+--- ENDPOINTS PUBLICS ----------------------------------------------------------
+
+1. GET /public
+   - Description : Endpoint de test pour vérifier que l'API est accessible publiquement.
+   - Paramètre(s) attendu(s) : Aucun.
+   - Sécurité : Aucune.
+   - Réponse : {"message": "Accès public"}
+
+2. GET /livres
+   - Description : Récupère la liste de tous les livres depuis la table "livre" (dbo.livre).
+   - Paramètre(s) attendu(s) : Aucun.
+   - Sécurité : Aucune.
+   - Format de la réponse : Liste d'objets JSON avec les champs : {id (entier), titre (chaîne), stock (entier)}.
+
+3. POST /livres
+   - Description : Crée un nouveau livre de base dans la table "livre".
+   - Paramètre(s) attendu(s) : Body en format JSON avec les champs : {titre (chaîne), stock (entier)}.
+   - Sécurité : Aucune.
+   - Format de la réponse : L'objet Livre créé avec son {id}.
+
+4. GET /livres/{livre_id}
+   - Description : Récupère les détails d'un livre spécifique à partir de la table "livre" grâce à son identifiant.
+   - Paramètre(s) attendu(s) : {livre_id} (entier) envoyé dans l'URL.
+   - Sécurité : Aucune.
+   - Format de la réponse : L'objet Livre correspondant en JSON ou une erreur 404 (Livre non trouvé).
+
+5. DELETE /livres/{livre_id}
+   - Description : Supprime un livre spécifique de la table "livre" par son identifiant.
+   - Paramètre(s) attendu(s) : {livre_id} (entier) envoyé dans l'URL.
+   - Sécurité : Aucune.
+   - Format de la réponse : {"message": "Livre supprimé"} ou une erreur 404 si le livre n'existe pas.
+
+--- ENDPOINTS PROTÉGÉS ---------------------------------------------------------
+
+6. GET /protected
+   - Description : Endpoint de test pour vérifier l'authentification par clé API.
+   - Paramètre(s) attendu(s) : x-api-key dans le Header.
+   - Sécurité : Requiert la clé API valide.
+   - Format de la réponse : {"message": "Accès autorisé"} ou une erreur 401 si la clé est manquante/invalide.
+
+7. GET /v_livres
+   - Description : Récupère la liste complète des livres enrichis à partir de la vue SQL "V_Livres" (via sqlalchemy_to_pydantic).
+   - Paramètre(s) attendu(s) : x-api-key dans le Header.
+   - Sécurité : Requiert la clé API valide.
+   - Format de la réponse : Liste d'objets JSON contenant les différents champs de la vue, par exemple :
+        Id_Livre, Titre, Résumé, Prix, Date_de_parution, ISBN, Stock, Id_Editeur.

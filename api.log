@@ -1,0 +1,15 @@
+2026-02-04 14:18:00,387 - INFO - 127.0.0.1 GET /v_livres status=200 time=0.027s
+2026-02-04 14:20:50,821 - INFO - 127.0.0.1 GET /v_livres status=200 time=0.020s
+2026-02-04 14:20:51,491 - INFO - 127.0.0.1 GET /v_livres status=200 time=0.004s
+2026-02-04 14:20:51,679 - INFO - 127.0.0.1 GET /v_livres status=200 time=0.004s
+2026-02-04 14:21:00,297 - INFO - 127.0.0.1 GET /v_livres status=200 time=0.017s
+2026-02-04 14:21:10,811 - INFO - 127.0.0.1 GET /v_livres status=200 time=0.018s
+2026-02-04 14:21:12,895 - INFO - 127.0.0.1 GET /v_livres status=200 time=0.004s
+2026-02-04 14:22:44,363 - INFO - 127.0.0.1 GET /v_livres status=200 time=0.009s
+2026-02-04 14:22:46,814 - INFO - 127.0.0.1 GET /v_livres status=200 time=0.004s
+2026-02-04 14:22:47,789 - INFO - 127.0.0.1 GET /v_livres status=200 time=0.004s
+2026-02-04 14:27:16,772 - INFO - 127.0.0.1 GET /v_livres status=401 time=0.005s
+2026-02-04 14:27:27,321 - INFO - 127.0.0.1 GET /v_livres status=401 time=0.002s
+2026-02-04 14:36:04,366 - INFO - 127.0.0.1 GET /v_livres status=401 time=0.006s
+2026-02-04 14:36:40,156 - INFO - 127.0.0.1 GET /v_livres status=200 time=0.025s
+2026-03-25 09:39:59,377 - INFO - 127.0.0.1 GET /v_livres status=200 time=0.017s

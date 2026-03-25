@@ -2,7 +2,9 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import requests
 
-API_BASE_URL = "http://127.0.0.1:8000"  # URL de ton API FastAPI [file:3]
+API_BASE_URL = "http://127.0.0.1:8001"  # URL de ton API FastAPI [file:3]
+
+API_KEY = "tp-secret-key"
 
 # --- "Base de données" utilisateurs locale (login/mot de passe) ---
 USERS = {
@@ -19,8 +21,9 @@ def get_livres_from_api():
     L'API renvoie une liste de dicts conformes au schéma V_LivresSchema. [file:3][file:7]
     """
     url = f"{API_BASE_URL}/v_livres"
+    headers = {"X-API-Key": API_KEY}
     try:
-        response = requests.get(url, timeout=5)
+        response = requests.get(url,headers=headers)
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
@@ -200,5 +203,35 @@ class LoginWindow(tk.Tk):
 
 
 if __name__ == "__main__":
+    import subprocess
+    import os
+    import sys
+    import atexit
+
+    # Le chemin du projet racine (dossier parent)
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    
+    print("Démarrage de l'API en tâche de fond...")
+    
+    # On utilise sys.executable pour s'assurer qu'on utilise le même que pour ce script
+    # On exécute le module uvicorn pour démarrer FastAPI sur le port 8001 (pour éviter le conflit avec Symfony)
+    api_process = subprocess.Popen(
+        [sys.executable, "-m", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8001"],
+        cwd=project_root
+    )
+
+    # Sécurité supplémentaire pour bien killer le process API si on quitte mal
+    def kill_api():
+        try:
+            api_process.terminate()
+        except:
+            pass
+
+    atexit.register(kill_api)
+
     app = LoginWindow()
     app.mainloop()
+
+    # Quand le mainloop (la fenêtre tk) se termine, on arrête le sous-processus API
+    print("Arrêt de l'API...")
+    kill_api()
